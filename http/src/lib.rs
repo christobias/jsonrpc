@@ -362,6 +362,36 @@ impl<M: jsonrpc::Metadata, S: jsonrpc::Middleware<M>> ServerBuilder<M, S> {
 		self
 	}
 
+	/// Creates a `ServerHandler` from this builder
+	pub fn get_handler(&self) -> ServerHandler<M, S> {
+		let cors_domains = self.cors_domains.clone();
+		let cors_max_age = self.cors_max_age;
+		let allowed_headers = self.allowed_headers.clone();
+		let request_middleware = self.request_middleware.clone();
+		let allowed_hosts = self.allowed_hosts.clone();
+		let jsonrpc_handler = Rpc {
+			handler: self.handler.clone(),
+			extractor: self.meta_extractor.clone(),
+		};
+		let rest_api = self.rest_api.clone();
+		let health_api = self.health_api.clone();
+		let keep_alive = self.keep_alive;
+		let max_request_body_size = self.max_request_body_size;
+
+		ServerHandler::new(
+			jsonrpc_handler,
+			cors_domains,
+			cors_max_age,
+			allowed_headers,
+			allowed_hosts,
+			request_middleware,
+			rest_api,
+			health_api,
+			max_request_body_size,
+			keep_alive,
+		)
+	}
+
 	/// Start this JSON-RPC HTTP server trying to bind to specified `SocketAddr`.
 	pub fn start_http(self, addr: &SocketAddr) -> io::Result<Server> {
 		let cors_domains = self.cors_domains;
